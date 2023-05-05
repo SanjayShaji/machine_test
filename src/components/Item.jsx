@@ -4,9 +4,10 @@ import CardContent from '@mui/material/CardContent';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import FlexBetween from './FlexBetween';
-import { useMediaQuery } from '@mui/material';
+import { CircularProgress, Skeleton, useMediaQuery } from '@mui/material';
 import { Add, Remove, StopCircleOutlined } from '@mui/icons-material';
 import { useContext, useState } from 'react';
+import { useInView } from 'react-intersection-observer'
 import { MyContext } from '../App';
 
 export default function Item({ item }) {
@@ -14,18 +15,40 @@ export default function Item({ item }) {
     const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
     const { setCartCount, cartCount } = useContext(MyContext);
     const [addToCart, setAddToCart] = useState(false);
+    const { ref, inView, entry } = useInView({
+        rootMargin: "100px 0px",
+        threshold: 0
+    })
+
+    const addFunction = async()=>{
+        setCount(count + 1)
+        if (!addToCart) {
+            setCartCount(cartCount + 1)
+        }
+        setAddToCart(true)
+    }
+
+    const removeFunction = async() => {
+        if (count > 0) {
+            setCount(count - 1)
+        }
+        if (count === 1 && addToCart === true) {
+            setAddToCart(false)
+            setCartCount(cartCount - 1)
+        }
+    }
 
     return (
         <Card sx={{ margin: "10px", display: 'flex', alignItems: "start", }}>
             <Box sx={{ paddingTop: "20px" }}>
-                {item.dish_Type === 1 ? 
-                    <StopCircleOutlined padding="100px" color="primary"/>
-                 :
-                    <StopCircleOutlined padding="100px" sx={{ color: "green" }}/>
+                {item.dish_Type === 1 ?
+                    <StopCircleOutlined padding="100px" color="primary" />
+                    :
+                    <StopCircleOutlined padding="100px" sx={{ color: "green" }} />
                 }
             </Box>
-            <Card elevation={0} sx={{ display: 'flex'}}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', width: '1500px' }}  marginBottom={1}>
+            <Card elevation={0} sx={{ display: 'flex' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', width: '1500px' }} marginBottom={1}>
                     <CardContent sx={{ flex: '1 0 auto' }}>
 
                         <Typography fontSize={15} component="div" fontWeight="bold">{item.dish_name}</Typography>
@@ -37,44 +60,33 @@ export default function Item({ item }) {
                     </CardContent>
 
                     {item.dish_Availability ? (
-                        <FlexBetween sx={{ width: "150px", backgroundColor: "green", borderRadius: 4 }}>
-                            <IconButton onClick={() => {
-                                if (count > 0) {
-                                    setCount(count - 1)
-                                }
-                                if (count === 1 && addToCart === true) {
-                                    setAddToCart(false)
-                                    setCartCount(cartCount - 1)
-                                }
-                            }} sx={{ color: 'white' }}>
+                        <FlexBetween sx={{ width: "150px", marginLeft: "15px",  backgroundColor: "green", borderRadius: 4 }}>
+                            <IconButton onClick={removeFunction} sx={{ color: 'white' }}>
                                 <Remove />
                             </IconButton>
                             <Typography sx={{ color: 'white' }}>{count}</Typography>
-                            <IconButton onClick={() => {
-                                setCount(count + 1)
-                                if (!addToCart) {
-                                    setCartCount(cartCount + 1)
-                                }
-                                setAddToCart(true)
-                            }} sx={{ color: 'white' }}>
+                            <IconButton onClick={addFunction} sx={{ color: 'white' }}>
                                 <Add />
                             </IconButton>
                         </FlexBetween>
                     ) : (
-                        <Typography sx={{ color: "red" }}>Not Available</Typography>
+                        <Typography sx={{ color: "red", paddingLeft: "15px" }}>Not Available</Typography>
                     )}
 
-                    {item.addonCat[0] && <Typography sx={{ color: "red" }}>customization Availble</Typography>}
+                    {item.addonCat[0] && <Typography sx={{ color: "red", paddingLeft: "15px" }}>customization Availble</Typography>}
                 </Box>
-                <Box sx={{  height: 100 }}>
-                <img
-                    // maxWidth="100%"
-                    style={{borderRadius: 5}}
-                    width={80}
-                    height={80}
-                    src={item.dish_image}
-                    alt='not found'
-                    /> 
+
+                <Box
+                    sx={{ height: 100 }}
+                    ref={ref}
+                >
+                    {inView ? <img
+                        style={{ borderRadius: 5 }}
+                        width={80}
+                        height={80}
+                        src={item.dish_image}
+                        alt="not found"
+                    /> : <CircularProgress />}
                 </Box>
             </Card>
         </Card>

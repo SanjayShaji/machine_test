@@ -26,10 +26,7 @@ export default function Categories() {
   };
 
   useEffect(() => {
-    setTimeout(() => {
       getItemsFn();
-
-    }, 1000);
   }, []);
 
   return (
@@ -47,7 +44,7 @@ export default function Categories() {
       </Tabs>
 
       {loading ?
-        <Box sx={{ textAlign: "center", paddingTop: "200px" }}>
+        <Box sx={{ textAlign: "center", paddingTop: "150px" }}>
           <CircularProgress />
         </Box> :
         categories?.map((category, index) => (
